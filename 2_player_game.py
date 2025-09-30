@@ -43,12 +43,22 @@ def move_bullets(bullets_y, yellow, bullets_r,red):
         i.x += 10
         if i.x > WIDTH:
             bullets_y.remove(i)
-        for r in bullets_r:
+        hit_bullet = False
+        for r in bullets_r[:]:
             if i.colliderect(r):
-                print("bullet_hit", a)
-                a += 1
                 bullets_r.remove(r)
                 bullets_y.remove(i)
+                hit_bullet = True
+                break  # i is gone; stop checking
+        if hit_bullet:
+            continue
+        # for r in bullets_r:
+        #     if i.colliderect(r):
+        #         print("bullet_hit", a)
+        #         a += 1
+                
+        #         bullets_r.remove(r)
+        #         bullets_y.remove(i)
         if i.colliderect(red):
             bullets_y.remove(i)
             pygame.event.post(pygame.event.Event(red_hit))
@@ -119,6 +129,7 @@ def main():
        move_bullets(bullets_y, yellow, bullets_r,red)
 
 main()
+
 
 
 

@@ -1,6 +1,7 @@
 import pygame, pyautogui, time, random, os
 pygame.font.init()
 pygame.mixer.init()
+#mixer is for sounds
 WIDTH, HEIGHT = pyautogui.size()
 TITLE = "warzone"
 screen = pygame.display.set_mode((WIDTH,HEIGHT))
@@ -10,7 +11,7 @@ sh = HEIGHT / 15
 bg = pygame.transform.scale(pygame.image.load("space_background.png"), (WIDTH,HEIGHT))
 ship1 = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("ship1.png"), (sw,sh)),90)
 ship2 = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("ship2.png"), (sw,sh)),-90)
-
+laser_sound = pygame.mixer.Sound("laser_sound.wav")
 shipstart1 = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("ship1.png"), (150,150)),145)
 shipstart2 = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("ship2.png"), (150,150)),-145)
 
@@ -21,7 +22,11 @@ font_small = pygame.font.SysFont("calibrie", 40)
 font_big = pygame.font.SysFont("calibrie", 80)
 a = 0
 game_state = "start"
+
 def draw(red, yellow, bullets_y, bullets_r,winner, y_health, r_health):
+    screen.fill("black")
+    screen.blit(bg,(0,0))
+    print(r_health,y_health)
     if game_state == "start":
         screen.blit(bg,(0,0))
         screen.blit(shipstart1, (100,100))
@@ -45,14 +50,14 @@ def draw(red, yellow, bullets_y, bullets_r,winner, y_health, r_health):
         
     # pygame.draw.rect(screen,"red", red)
     # pygame.draw.rect(screen,"yellow", yellow)
-        y_health_text = font_small.render("yellows hp ->" + str(y_health),True, "white")
-        r_health_text = font_small.render("reds hp ->" + str(r_health),True, "white")
-        screen.blit(y_health_text, (20,20))
-        screen.blit(r_health_text,(WIDTH - 150, 20))
     if game_state == "end":
             winner_text = font_big.render("the winner is " + winner, True, "white" )
             screen.blit(winner_text,(WIDTH / 3,HEIGHT / 3))
             winner = None
+    y_health_text = font_small.render("yellows hp -> " + str(y_health),True, "white")
+    r_health_text = font_small.render("reds hp ->" + str(r_health),True, "white")
+    screen.blit(y_health_text, (20,20))
+    screen.blit(r_health_text,(WIDTH - 150, 20))
 
     pygame.display.update()
 def move_bullets(bullets_y, yellow, bullets_r,red):
@@ -118,6 +123,7 @@ def main():
                pygame.quit()
            if event.type == pygame.KEYDOWN:
                if event.key == pygame.K_e and game_state == "play":
+                   laser_sound.play()
                    bullet = pygame.Rect(yellow.x + yellow.width, yellow.y + yellow.height / 2, 20,10) 
                    bullets_y.append(bullet)
                if event.key == pygame.K_SPACE:
@@ -139,15 +145,16 @@ def main():
                 winner = "red"
             if winner:
                 game_state = "end"
-
+            move_bullets(bullets_y, yellow, bullets_r,red)
 
             if random.randint(1,50) < 10:
                 move_ai(red)
             if random.randint(1,50) < 5:
+                    laser_sound.play()
                     bullet = pygame.Rect(red.x , red.y + red.height / 2, 20,10) 
                     bullets_r.append(bullet) 
        draw(red, yellow, bullets_y, bullets_r,winner, y_health, r_health)
-       move_bullets(bullets_y, yellow, bullets_r,red)
+      
 main()
 
 

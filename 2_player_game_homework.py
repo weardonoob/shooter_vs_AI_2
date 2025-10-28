@@ -10,7 +10,9 @@ sh = HEIGHT / 15
 bg = pygame.transform.scale(pygame.image.load("space_background.png"), (WIDTH,HEIGHT))
 ship1 = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("millenium_falcon.png"), (sw,sh)),-90)
 ship2 = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("x-wing.png"), (sw,sh)),90)
-
+laser_sound = pygame.mixer.Sound("laser_sound.wav")
+hit = pygame.mixer.Sound("getting_hit.wav")
+rewind = pygame.mixer.Sound("rewind.wav")
 shipstart1 = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("millenium_falcon.png"), (350,350)),-110)
 shipstart2 = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("x-wing.png"), (200,200)),40)
 
@@ -52,8 +54,13 @@ def draw(red, yellow, bullets_y, bullets_r,winner, y_health, r_health):
     if game_state == "end":
             winner_text = font_big.render("the winner is " + winner, True, "white" )
             screen.blit(winner_text,(WIDTH / 3,HEIGHT / 3))
+            bullets_r = []
+            bullets_y = []
             winner = None
-
+            y_health_text = font_small.render("millenium hp ->" + str(y_health),True, "white")
+            r_health_text = font_small.render("x-wing hp ->" + str(r_health),True, "white")
+            screen.blit(y_health_text, (20,20))
+            screen.blit(r_health_text,(WIDTH - 200, 20))
     pygame.display.update()
 def move_bullets(bullets_y, yellow, bullets_r,red):
     global a
@@ -120,6 +127,7 @@ def move_ai(red, yellow, bullets_y, bullets_r):
 
         if random.random() < 0.3:
             bullet = pygame.Rect(red.x, red.y + red.height / 2, 20, 10)
+            laser_sound.play()
             bullets_r.append(bullet)
 
 def main():
@@ -132,6 +140,7 @@ def main():
     y_health,r_health = 3,3
     run = True
     while run:
+       print(y_health, r_health)
        for event in pygame.event.get():
            #print(event)
            if event.type == pygame.QUIT:
@@ -139,33 +148,39 @@ def main():
            if event.type == pygame.KEYDOWN:
                if event.key == pygame.K_e and game_state == "play":
                    bullet = pygame.Rect(yellow.x + yellow.width, yellow.y + yellow.height / 2, 20,10) 
+                   laser_sound.play()
                    bullets_y.append(bullet)
                if event.key == pygame.K_SPACE:
+                   rewind.play()
                    game_state = "play"
                    bullets_y, bullets_r = [],[]
                    winner = None
                    y_health,r_health = 3,3
                    print(game_state)
-           if event.type == red_hit:
-               r_health -= 1
-           if event.type == yellow_hit:
-               y_health -= 1
+           if game_state == "play":
+            if event.type == red_hit:
+                r_health -= 1
+                hit.play()
+            if event.type == yellow_hit:
+                y_health -= 1
+                hit.play()
        if game_state == "play":
             key_pressed = pygame.key.get_pressed()
             handle_player(key_pressed,yellow)
-            if r_health < 1:
+            if r_health == 0:
                 winner = "millenium falcon"
-            if y_health < 1:
+            if y_health == 0:
                 winner = "x-wing"
             if winner:
                 game_state = "end"
 
 
-            
+
+            move_bullets(bullets_y, yellow, bullets_r,red)
             move_ai(red, yellow, bullets_y, bullets_r)
 
        draw(red, yellow, bullets_y, bullets_r,winner, y_health, r_health)
-       move_bullets(bullets_y, yellow, bullets_r,red)
+
 main()
 
 
